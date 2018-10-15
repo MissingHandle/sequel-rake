@@ -4,7 +4,7 @@ namespace Sequel::Rake.get(:namespace) do
   require "sequel"
   require "fileutils"
 
-  task :environment unless Rake::Task.task_defined?("sequel:environment")
+  task :environment unless Rake::Task.task_defined?("#{Sequel::Rake.get(:namespace)}:environment")
 
   desc "Creates the migrations directory"
   task init: :environment do

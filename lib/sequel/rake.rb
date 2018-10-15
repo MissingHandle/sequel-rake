@@ -14,22 +14,30 @@ module Sequel
   module Rake
     module Connection
       class << self
-        def connection_url
-          @connection_url
+
+        def set(url_string)
+          @connection_string = url_string
         end
 
-        def set_connection_url(connection_url)
-          @connection_url = connection_url
+        def get
+          @connection_string
         end
 
         def fetch
-          return connection_url if connection_url
+          return get if get
           return ENV["DATABASE_URL"] if ENV["DATABASE_URL"]
-          raise RuntimeError.new("""
-            Sequel::Rake requires that a connection url string be set.
-            This can be done either by using Rake::Connection.set_connection_url(url_string),
-            or by defining 'DATABASE_URL' in your environment
-            """
+          raise RuntimeError.new(
+            <<~HEREDOC
+              Sequel::Rake requires that a connection url string be set.
+              define 'DATABASE_URL' in your environment or call Sequel::Rake.configure.
+              For Example,
+
+                Sequel::Rake.configure do
+                  set :connection, ENV['DATABASE_URL']
+                  set :migrations, "#{__dir__}/lib/db/migrations"
+                  set :namespace, "db"
+                end
+            HEREDOC
           )
         end
       end
@@ -38,7 +46,7 @@ module Sequel
     class << self
       def configuration
         @configuration ||= {
-          connection: Sequel::Rake::Connection.fetch,
+          connection: Rake::Connection.fetch,
           migrations: "db/migrations",
           namespace: "sequel"
         }
